@@ -70,6 +70,19 @@
             visibility: visible;
             transition: opacity 0.2s ease-in-out;
         }
+
+        .verb-box {
+            transition: all 0.2s ease;
+        }
+        .verb-box.completed {
+            background-color: #eab308 !important; /* Yellow 500 */
+            color: #0f172a !important;
+            border-color: #facc15 !important;
+        }
+        .verb-box.active {
+            border-color: #38bdf8 !important;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -109,13 +122,27 @@
     <!-- Game Screen -->
     <div id="game-screen" class="hidden flex flex-col h-screen">
         
-        <!-- Tracks -->
-        <div id="tracks-container" class="h-[35%] flex flex-col overflow-y-auto custom-scrollbar relative bg-slate-950 border-b border-slate-800">
+        <!-- Tracks Area (Race Mode) / Selection Area (Solo Mode) -->
+        <div id="top-panel" class="h-[38%] flex flex-col overflow-y-auto custom-scrollbar relative bg-slate-950 border-b border-slate-800">
             <div id="stars"></div>
+            
+            <!-- Race Tracks -->
+            <div id="tracks-container" class="flex flex-col w-full h-full"></div>
+
+            <!-- Solo Selection Panel -->
+            <div id="solo-selection-panel" class="hidden absolute inset-0 flex flex-col p-4 z-20">
+                <div class="flex justify-between items-center mb-2 px-2">
+                    <h3 class="text-sky-400 font-bold uppercase tracking-widest text-xs">Mission Selector</h3>
+                    <span id="solo-counter" class="text-slate-500 text-[10px] font-mono">0 / 0 Completed</span>
+                </div>
+                <div id="verb-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 overflow-y-auto custom-scrollbar pr-2 pb-4">
+                    <!-- Verb boxes injected here -->
+                </div>
+            </div>
         </div>
 
         <!-- Question Area -->
-        <div class="h-[65%] bg-slate-900 p-4 flex flex-col relative">
+        <div class="h-[62%] bg-slate-900 p-4 flex flex-col relative">
             <div class="max-w-6xl mx-auto w-full flex flex-col h-full">
                 
                 <div class="flex justify-between items-center mb-4">
@@ -126,7 +153,7 @@
                         </div>
                     </div>
                     <div class="flex gap-2">
-                        <span id="score-info" class="hidden text-xs text-slate-500 self-center mr-4">Target: 30 Points</span>
+                        <span id="score-info" class="hidden text-xs text-slate-500 self-center mr-4 text-nowrap">Target: 30 Points</span>
                         <button onclick="nextVerb()" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-full text-[10px] font-bold flex items-center gap-2 border border-slate-700 transition-all">
                             Skip Verb <span>⏭️</span>
                         </button>
@@ -173,7 +200,6 @@
 
     <script>
         const mainVerbs = [
-            // SEIN Verbs
             { de: "gehen", aux: "ist", steps: [
                 { en: "to go - gone", de: "gehen - ist gegangen" },
                 { en: "I have gone to the cinema with my friends.", de: "Ich bin mit meinen Freunden ins Kino gegangen." },
@@ -195,7 +221,13 @@
                 { en: "They will stay in a hotel near the beach.", de: "Sie werden in einem Hotel in der Nähe vom Strand bleiben." },
                 { en: "I would stay longer, but I have to go.", de: "Ich würde länger bleiben, aber ich muss gehen." }
             ]},
-            // HABEN Verbs
+            { de: "schwimmen", aux: "ist", steps: [
+                { en: "to swim - swum", de: "schwimmen - ist geschwommen" },
+                { en: "We have swum in the lake behind our house.", de: "Wir sind im See hinter unserem Haus geschwommen." },
+                { en: "He wants to go to the beach in order to swim.", de: "Er will an den Strand gehen, um zu schwimmen." },
+                { en: "I will swim fifty metres without a break.", de: "Ich werde fünfzig Meter ohne Pause schwimmen." },
+                { en: "He would swim more often if the water were warmer.", de: "Er würde öfter schwimmen, wenn das Wasser wärmer wäre." }
+            ]},
             { de: "besichtigen", aux: "hat", steps: [
                 { en: "to visit (sights) - visited", de: "besichtigen - hat besichtigt" },
                 { en: "We have visited the old castle in the town centre.", de: "Wir haben das alte Schloss in der Stadtmitte besichtigt." },
@@ -274,7 +306,7 @@
                 { en: "I would love to experience a real winter.", de: "Ich würde es lieben, einen echten Winter zu erleben." }
             ]},
             { de: "verpassen", aux: "hat", steps: [
-                { en: "to miss (a bus/event) - missed", de: "verpassen - hat verpasst" },
+                { en: "to miss - missed", de: "verpassen - hat verpasst" },
                 { en: "Oh no! I have missed the last bus home.", de: "Oh nein! Ich habe den letzten Bus nach Hause verpasst." },
                 { en: "I hate missing the start of a film.", de: "Ich hasse es, den Anfang von einem Film zu verpassen." },
                 { en: "Hurry up or we will miss the train!", de: "Beeil dich, oder wir werden den Zug verpassen!" },
@@ -314,24 +346,85 @@
                 { en: "It is difficult to understand this grammar rule.", de: "Es ist schwierig, diese Grammatikregel zu verstehen." },
                 { en: "You will understand the story better later.", de: "Du wirst die Geschichte später besser verstehen." },
                 { en: "I would understand it if you explained it.", de: "Ich würde es verstehen, wenn du es erklären würdest." }
+            ]},
+            { de: "stattfinden", aux: "hat", steps: [
+                { en: "to take place - taken place", de: "stattfinden - hat stattgefunden" },
+                { en: "The concert has taken place in the park.", de: "Das Konzert hat im Park stattgefunden." },
+                { en: "I hope the party takes place tomorrow.", de: "Ich hoffe, dass die Party morgen stattfindet." },
+                { en: "The festival will take place in July.", de: "Das Festival wird im Juli stattfinden." },
+                { en: "It would take place if there were more money.", de: "Es würde stattfinden, wenn es mehr Geld gäbe." }
+            ]},
+            { de: "danken", aux: "hat", steps: [
+                { en: "to thank - thanked", de: "danken - hat gedankt" },
+                { en: "I have thanked my teacher for the help.", de: "Ich habe meinem Lehrer für die Hilfe gedankt." },
+                { en: "It's nice to thank people for their gifts.", de: "Es ist nett, den Leuten für ihre Geschenke zu danken." },
+                { en: "I will thank her when I see her.", de: "Ich werde ihr danken, wenn ich sie sehe." },
+                { en: "I would thank you if I could find the words.", de: "Ich würde dir danken, wenn ich die Worte finden könnte." }
+            ]},
+            { de: "spielen", aux: "hat", steps: [
+                { en: "to play - played", de: "spielen - hat gespielt" },
+                { en: "We have played tennis in the garden.", de: "Wir haben im Garten Tennis gespielt." },
+                { en: "I love playing the piano in order to relax.", de: "Ich liebe es, Klavier zu spielen, um mich zu entspannen." },
+                { en: "He will play football on Saturday morning.", de: "Er wird am Samstagmorgen Fußball spielen." },
+                { en: "I would play more often if I had a ball.", de: "Ich würde öfter spielen, wenn ich einen Ball hätte." }
+            ]},
+            { de: "hören", aux: "hat", steps: [
+                { en: "to hear/listen - heard", de: "hören - hat gehört" },
+                { en: "I have heard the news on the radio.", de: "Ich habe die Nachrichten im Radio gehört." },
+                { en: "I like listening to music in order to sleep.", de: "Ich höre gerne Musik, um zu schlafen." },
+                { en: "You will hear the results later.", de: "Du wirst die Ergebnisse später hören." },
+                { en: "I would listen if you spoke louder.", de: "Ich würde zuhören, wenn du lauter sprechen würdest." }
+            ]},
+            { de: "sehen", aux: "hat", steps: [
+                { en: "to see/watch - seen", de: "sehen - hat gesehen" },
+                { en: "We have seen a great film at the cinema.", de: "Wir haben einen tollen film im Kino gesehen." },
+                { en: "I'm going to the gallery in order to see the art.", de: "Ich gehe in die Galerie, um die Kunst zu sehen." },
+                { en: "I will see you tomorrow at school.", de: "Ich werde dich morgen in der Schule sehen." },
+                { en: "I would see it if I had my glasses.", de: "Ich würde es sehen, wenn ich meine Brille hätte." }
+            ]},
+            { de: "lesen", aux: "hat", steps: [
+                { en: "to read - read", de: "lesen - hat gelesen" },
+                { en: "I have read an interesting book about history.", de: "Ich habe ein interessantes Buch über Geschichte gelesen." },
+                { en: "I love reading in order to learn new things.", de: "Ich liebe es zu lesen, um neue Dinge zu lernen." },
+                { en: "She will read the newspaper at breakfast.", de: "Sie wird beim Frühstück die Zeitung lesen." },
+                { en: "I would read more if the font were bigger.", de: "Ich würde mehr lesen, wenn die Schrift größer wäre." }
+            ]},
+            { de: "kaufen", aux: "hat", steps: [
+                { en: "to buy - bought", de: "kaufen - hat gekauft" },
+                { en: "My father has bought a new car.", de: "Mein Vater hat ein neues Auto gekauft." },
+                { en: "I'm going to the shop in order to buy bread.", de: "Ich gehe in den Laden, um Brot zu kaufen." },
+                { en: "I will buy a present for my sister.", de: "Ich werde ein Geschenk für meine Schwester kaufen." },
+                { en: "I would buy it if I had enough money.", de: "Ich würde es kaufen, wenn ich genug Geld hätte." }
+            ]},
+            { de: "schlafen", aux: "hat", steps: [
+                { en: "to sleep - slept", de: "schlafen - hat geschlafen" },
+                { en: "I have slept for ten hours last night.", de: "Ich habe letzte Nacht zehn Stunden geschlafen." },
+                { en: "I'm going to bed in order to sleep.", de: "Ich gehe ins Bett, um zu schlafen." },
+                { en: "He will sleep at his friend's house tonight.", de: "Er wird heute Nacht bei seinem Freund schlafen." },
+                { en: "I would sleep better if it were quieter.", de: "Ich würde besser schlafen, wenn es ruhiger wäre." }
             ]}
         ];
 
         const foundations = [
             { de: "Haben (Foundations)", steps: [
                 { en: "List: I have, I had, I would have", de: "Ich habe, ich hatte, ich hätte" },
-                { en: "Conditional: If I had more time, I would have a better job.", de: "Wenn ich mehr Zeit hätte, hätte ich einen besseren Job." },
+                { en: "Imperfect: I had a lot of stress at school last week.", de: "Ich hatte letzte Woche viel Stress in der Schule." },
+                { en: "Future: I will have a big party for my birthday.", de: "Ich werde eine große Party zu meinem Geburtstag haben." },
+                { en: "Conditional: I would have a dog if I lived in a house.", de: "Ich hätte einen Hund, wenn ich in einem Haus wohnen würde." },
                 { en: "Past Phrase: When I had more time, I used to read every day.", de: "Als ich mehr Zeit hatte, habe ich jeden Tag gelesen." }
             ]},
             { de: "Sein (Foundations)", steps: [
                 { en: "List: I am, I was, I would be", de: "Ich bin, ich war, ich wäre" },
-                { en: "Conditional: If it were sunny today, I would be very happy.", de: "Wenn es heute sunnig wäre, wäre ich sehr glücklich." },
+                { en: "Imperfect: We were very tired after the long journey.", de: "Wir waren nach der langen Reise sehr müde." },
+                { en: "Future: I will be at home at eight o'clock tonight.", de: "Ich werde heute Abend um acht Uhr zu Hause sein." },
+                { en: "Conditional: I would be very happy if I won the race.", de: "Ich wäre sehr glücklich, wenn ich das Rennen gewinnen würde." },
                 { en: "Past Phrase: When I was a child, I lived in a small village.", de: "Als ich ein Kind war, habe ich in einem kleinen Dorf gewohnt." }
             ]}
         ];
 
         let students = [];
         let selectedStudentIds = new Set();
+        let completedVerbs = new Set();
         let currentVerb = null;
         let currentStepIndex = 0;
         let mandatoryIdx = 0;
@@ -367,37 +460,62 @@
                     color: getColor(idx)
                 }));
                 document.getElementById('tracks-container').style.display = 'flex';
+                document.getElementById('solo-selection-panel').classList.add('hidden');
                 document.getElementById('race-controls').style.display = 'block';
                 document.getElementById('score-info').style.display = 'inline';
+                prepareVerbs();
+                loadNextVerb();
             } else {
                 students = [];
                 document.getElementById('tracks-container').style.display = 'none';
+                document.getElementById('solo-selection-panel').classList.remove('hidden');
                 document.getElementById('race-controls').style.display = 'none';
                 document.getElementById('score-info').style.display = 'none';
+                generateVerbGrid();
+                // Load first foundation by default
+                loadSpecificVerb(foundations[0], true);
             }
 
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
+        }
+
+        function generateVerbGrid() {
+            const grid = document.getElementById('verb-grid');
+            grid.innerHTML = '';
             
-            initTracks();
-            prepareVerbs();
-            loadNextVerb();
+            const allAvailable = [...foundations, ...mainVerbs];
+            document.getElementById('solo-counter').innerText = `${completedVerbs.size} / ${allAvailable.length} Completed`;
+
+            allAvailable.forEach((verb) => {
+                const box = document.createElement('div');
+                box.className = `verb-box p-2 bg-slate-800 border-2 border-slate-700 rounded text-[9px] font-bold text-center cursor-pointer hover:bg-slate-700 ${completedVerbs.has(verb.de) ? 'completed' : ''} ${currentVerb && currentVerb.de === verb.de ? 'active' : ''}`;
+                box.innerText = verb.de;
+                box.onclick = () => loadSpecificVerb(verb);
+                grid.appendChild(box);
+            });
+        }
+
+        function loadSpecificVerb(verb, isInit = false) {
+            currentVerb = verb;
+            currentStepIndex = 0;
+            if (gameMode === 'solo') generateVerbGrid();
+            updateStepUI();
         }
 
         function prepareVerbs() {
-            // First randomized perfects are Sein, then Haben, then Sein.
             const seins = mainVerbs.filter(v => v.aux === 'ist').sort(() => Math.random() - 0.5);
             const habens = mainVerbs.filter(v => v.aux === 'hat').sort(() => Math.random() - 0.5);
             
             const firstThree = [seins.pop(), habens.pop(), seins.pop()];
             const theRest = [...seins, ...habens].sort(() => Math.random() - 0.5);
-            
             shuffledVerbs = [...firstThree, ...theRest];
+            mandatoryIdx = 0;
         }
 
         function initTracks() {
             const container = document.getElementById('tracks-container');
-            container.innerHTML = '<div id="stars"></div>';
+            container.innerHTML = '';
             createStars();
             if (gameMode === 'solo') return;
 
@@ -434,12 +552,10 @@
 
         function updateStepUI() {
             document.getElementById('answer-card').classList.remove('visible');
-            
             const step = currentVerb.steps[currentStepIndex];
             document.getElementById('verb-title').innerText = currentVerb.de;
             document.getElementById('english-text').innerText = step.en;
             document.getElementById('german-text').innerText = step.de;
-            
             selectedStudentIds.clear();
             
             const indicator = document.getElementById('step-indicator');
@@ -454,7 +570,7 @@
                 updatePointButtons();
                 document.getElementById('confirm-btn').innerText = "Confirm & Next";
             } else {
-                document.getElementById('confirm-btn').innerText = "Next Step";
+                document.getElementById('confirm-btn').innerText = currentStepIndex === currentVerb.steps.length - 1 ? "Complete Verb" : "Next Step";
             }
         }
 
@@ -494,20 +610,38 @@
                     const rocket = document.getElementById(`rocket-${student.id}`);
                     const percent = Math.min(2 + (student.score / WIN_SCORE) * 92, 94);
                     rocket.style.left = percent + '%';
-                    
                     if (student.score >= WIN_SCORE) showWinner(student.name);
                 });
-            }
-
-            currentStepIndex++;
-            if (currentStepIndex >= currentVerb.steps.length) {
-                loadNextVerb();
+                
+                currentStepIndex++;
+                if (currentStepIndex >= currentVerb.steps.length) {
+                    loadNextVerb();
+                } else {
+                    updateStepUI();
+                }
             } else {
-                updateStepUI();
+                // Solo Mode
+                if (currentStepIndex === currentVerb.steps.length - 1) {
+                    completedVerbs.add(currentVerb.de);
+                    generateVerbGrid();
+                    // Stay on current verb but show it as completed
+                }
+                
+                currentStepIndex++;
+                if (currentStepIndex >= currentVerb.steps.length) {
+                    // Logic for what happens after a verb finishes in solo?
+                    // Let's just stay on the last screen or return to start of verb.
+                    // For now, let's keep it on the last screen until they pick another.
+                    currentStepIndex = currentVerb.steps.length - 1;
+                } else {
+                    updateStepUI();
+                }
             }
         }
 
-        function nextVerb() { loadNextVerb(); }
+        function nextVerb() { 
+            if (gameMode === 'race') loadNextVerb(); 
+        }
 
         function getColor(i) {
             return ['#38bdf8', '#fb7185', '#34d399', '#facc15', '#a78bfa', '#fb923c', '#818cf8', '#2dd4bf', '#fb923c', '#94a3b8', '#f472b6', '#4ade80', '#60a5fa', '#f87171', '#c084fc', '#475569'][i % 16];
@@ -515,6 +649,7 @@
 
         function createStars() {
             const container = document.getElementById('stars');
+            if (!container) return;
             container.innerHTML = '';
             for (let i = 0; i < 60; i++) {
                 const star = document.createElement('div');
@@ -540,6 +675,8 @@
                 </div>`;
             document.body.appendChild(modal);
         }
+
+        window.onload = createStars;
     </script>
 </body>
 </html>
