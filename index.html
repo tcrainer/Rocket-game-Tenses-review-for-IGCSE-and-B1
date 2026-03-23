@@ -154,12 +154,14 @@
                         </div>
                         
                         <div id="scoring-section" class="mt-4 border-t border-slate-800 pt-4">
-                            <p id="selection-label" class="text-[10px] text-slate-500 uppercase tracking-widest mb-2 text-center">Select Astronauts:</p>
-                            <div id="point-buttons" class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-1 mb-4 max-h-24 overflow-y-auto p-1 custom-scrollbar">
-                                <!-- Buttons -->
+                            <div id="race-controls">
+                                <p id="selection-label" class="text-[10px] text-slate-500 uppercase tracking-widest mb-2 text-center">Select Astronauts:</p>
+                                <div id="point-buttons" class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-1 mb-4 max-h-24 overflow-y-auto p-1 custom-scrollbar">
+                                    <!-- Buttons -->
+                                </div>
                             </div>
                             <button id="confirm-btn" onclick="confirmPoints()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 rounded font-bold text-sm transition-all shadow-lg">
-                                Confirm & Next
+                                Confirm & Next Step
                             </button>
                         </div>
                     </div>
@@ -170,108 +172,148 @@
     </div>
 
     <script>
-        // Full Verb Library
         const mainVerbs = [
-            // SEIN Verbs (Crucial for first few rounds)
+            // SEIN Verbs
             { de: "gehen", aux: "ist", steps: [
                 { en: "to go - gone", de: "gehen - ist gegangen" },
                 { en: "I have gone to the cinema with my friends.", de: "Ich bin mit meinen Freunden ins Kino gegangen." },
-                { en: "...because I have gone to the park.", de: "...weil ich in den Park gegangen bin." },
+                { en: "I'm going to town in order to go shopping.", de: "Ich fahre in die Stadt, um einkaufen zu gehen." },
                 { en: "I will go to Germany next year.", de: "Ich werde nächstes Jahr nach Deutschland gehen." },
                 { en: "I would go to the party if I had time.", de: "Ich würde auf die Party gehen, wenn ich Zeit hätte." }
             ]},
             { de: "fahren", aux: "ist", steps: [
-                { en: "to drive/travel - travelled", de: "fahren - ist gefahren" },
+                { en: "to travel/drive - travelled", de: "fahren - ist gefahren" },
                 { en: "He has travelled to Berlin in his new car.", de: "Er ist mit seinem neuen Auto nach Berlin gefahren." },
-                { en: "...that he is driving to the mountains tomorrow.", de: "...dass er morgen in die Berge fährt." },
+                { en: "I'm travelling to the coast in order to swim.", de: "Ich fahre an die Küste, um zu schwimmen." },
                 { en: "We will travel to Switzerland in the summer.", de: "Wir werden im Sommer in die Schweiz fahren." },
                 { en: "I would drive if I had a driving licence.", de: "Ich würde fahren, wenn ich einen Führerschein hätte." }
             ]},
             { de: "bleiben", aux: "ist", steps: [
                 { en: "to stay - stayed", de: "bleiben - ist geblieben" },
                 { en: "We have stayed at home for the whole weekend.", de: "Wir sind das ganze Wochenende zu Hause geblieben." },
-                { en: "...although I am staying with my grandmother.", de: "...obwohl ich bei meiner Großmutter bleibe." },
+                { en: "I love staying in bed in order to relax.", de: "Ich liebe es, im Bett zu bleiben, um mich zu entspannen." },
                 { en: "They will stay in a hotel near the beach.", de: "Sie werden in einem Hotel in der Nähe vom Strand bleiben." },
                 { en: "I would stay longer, but I have to go.", de: "Ich würde länger bleiben, aber ich muss gehen." }
             ]},
-
             // HABEN Verbs
             { de: "besichtigen", aux: "hat", steps: [
                 { en: "to visit (sights) - visited", de: "besichtigen - hat besichtigt" },
                 { en: "We have visited the old castle in the town centre.", de: "Wir haben das alte Schloss in der Stadtmitte besichtigt." },
-                { en: "I'm going to Berlin in order to visit the museum.", de: "Ich fahre nach Berlin, um das Museum zu besichtigen." },
-                { en: "Will you visit the sights next week?", de: "Wirst du nächste Woche die Sehenswürdigkeiten besichtigen?" },
+                { en: "I'm going to London in order to visit the sights.", de: "Ich fahre nach London, um die Sehenswürdigkeiten zu besichtigen." },
+                { en: "I will visit the museum with my class.", de: "Ich werde mit meiner Klasse das Museum besichtigen." },
                 { en: "I would visit the gallery if it weren't closed.", de: "Ich würde die Galerie besichtigen, wenn sie nicht geschlossen wäre." }
             ]},
             { de: "übernachten", aux: "hat", steps: [
                 { en: "to stay overnight - stayed overnight", de: "übernachten - hat übernachtet" },
                 { en: "I have stayed overnight at my friend's house.", de: "Ich habe bei meinem Freund übernachtet." },
-                { en: "It is expensive to stay overnight in a hotel.", de: "Es ist teuer, in einem Hotel zu übernachten." },
-                { en: "They will stay overnight in London.", de: "Sie werden in London übernachten." },
-                { en: "We would stay overnight if there was a room.", de: "Wir würden übernachten, wenn es ein Zimmer gäbe." }
+                { en: "I hope to stay overnight in a youth hostel.", de: "Ich hoffe, in einer Jugendherberge zu übernachten." },
+                { en: "They will stay overnight in a tent.", de: "Sie werden in einem Zelt übernachten." },
+                { en: "We would stay overnight if it were cheaper.", de: "Wir würden übernachten, wenn es billiger wäre." }
             ]},
             { de: "benutzen", aux: "hat", steps: [
                 { en: "to use - used", de: "benutzen - hat benutzt" },
                 { en: "He has used his mobile phone during the lesson.", de: "Er hat sein Handy während der Stunde benutzt." },
-                { en: "I love using my computer for my homework.", de: "Ich liebe es, meinen Computer für meine Hausaufgaben zu benutzen." },
-                { en: "I will use the bus to get to school.", de: "Ich werde den Bus benutzen, um zur Schule zu kommen." },
+                { en: "I love using my laptop in order to study.", de: "Ich liebe es, meinen Laptop zu benutzen, um zu lernen." },
+                { en: "I will use the train to get to Berlin.", de: "Ich werde den Zug benutzen, um nach Berlin zu kommen." },
                 { en: "I would use my bike if it weren't broken.", de: "Ich würde mein Rad benutzen, wenn es nicht kaputt wäre." }
             ]},
             { de: "lernen", aux: "hat", steps: [
-                { en: "to learn/study - learned", de: "lernen - hat gelernt" },
+                { en: "to learn - learned", de: "lernen - hat gelernt" },
                 { en: "She has learned a lot of new words today.", de: "Sie hat heute viele neue Wörter gelernt." },
-                { en: "I try to study every evening for my exams.", de: "Ich versuche, jeden Abend für meine Prüfungen zu lernen." },
+                { en: "I try to study every day in order to pass my exams.", de: "Ich versuche, jeden Tag zu lernen, um meine Prüfungen zu bestehen." },
                 { en: "We will learn more about German history.", de: "Wir werden mehr über die deutsche Geschichte lernen." },
-                { en: "I would learn Spanish if I had more time.", de: "Ich würde Spanisch lernen, wenn ich mehr Zeit hätte." }
+                { en: "I would learn Spanish if I lived in Spain.", de: "Ich würde Spanisch lernen, wenn ich in Spanien wohnen würde." }
             ]},
             { de: "lieben", aux: "hat", steps: [
                 { en: "to love - loved", de: "lieben - hat geliebt" },
                 { en: "I have always loved playing football.", de: "Ich habe es schon immer geliebt, Fußball zu spielen." },
-                { en: "I love spending time with my family.", de: "Ich liebe es, Zeit mit meiner Familie zu verbringen." },
+                { en: "I love spending my time with my friends.", de: "Ich liebe es, meine Zeit mit meinen Freunden zu verbringen." },
                 { en: "You will love the food in this restaurant.", de: "Du wirst das Essen in diesem Restaurant lieben." },
-                { en: "I would love to go to the cinema tonight.", de: "Ich würde es lieben, heute Abend ins Kino zu gehen." }
+                { en: "I would love to travel around the world.", de: "Ich würde es lieben, um die Welt zu reisen." }
             ]},
             { de: "hoffen", aux: "hat", steps: [
                 { en: "to hope - hoped", de: "hoffen - hat gehofft" },
-                { en: "We have hoped for better weather.", de: "Wir haben auf besseres Wetter gehofft." },
-                { en: "I hope to see you soon.", de: "Ich hoffe, dich bald zu sehen." },
-                { en: "He will hope that the test is easy.", de: "Er wird hoffen, dass der Test einfach ist." },
-                { en: "I would hope for a better result.", de: "Ich würde auf ein besseres Ergebnis hoffen." }
+                { en: "We have hoped for good weather in the holidays.", de: "Wir haben in den Ferien auf gutes Wetter gehofft." },
+                { en: "I hope to get good grades this year.", de: "Ich hoffe, dieses Jahr gute Noten zu bekommen." },
+                { en: "He will hope that his friend comes along.", de: "Er wird hoffen, dass sein Freund mitkommt." },
+                { en: "I would hope for more luck next time.", de: "Ich würde auf mehr Glück beim nächsten Mal hoffen." }
+            ]},
+            { de: "antworten", aux: "hat", steps: [
+                { en: "to answer - answered", de: "antworten - hat geantwortet" },
+                { en: "The student has answered the difficult question.", de: "Der Schüler hat auf die schwierige Frage geantwortet." },
+                { en: "It is important to answer as soon as possible.", de: "Es ist wichtig, so schnell wie möglich zu antworten." },
+                { en: "I will answer your email tomorrow morning.", de: "Ich werde morgen früh auf deine E-Mail antworten." },
+                { en: "I would answer you if I knew the solution.", de: "Ich würde dir antworten, wenn ich die Lösung wüsste." }
             ]},
             { de: "einladen", aux: "hat", steps: [
                 { en: "to invite - invited", de: "einladen - hat eingeladen" },
-                { en: "I have invited all my friends to my party.", de: "Ich habe alle meine Freunde zu meiner Party eingeladen." },
-                { en: "I'm calling you in order to invite you.", de: "Ich rufe dich an, um dich einzuladen." },
-                { en: "Will you invite your cousin too?", de: "Wirst du deinen Cousin auch einladen?" },
-                { en: "I would invite him if I liked him.", de: "Ich würde ihn einladen, wenn ich ihn mögen würde." }
+                { en: "I have invited all my relatives to the party.", de: "Ich habe alle meine Verwandten zur Party eingeladen." },
+                { en: "I'm calling you in order to invite you to dinner.", de: "Ich rufe dich an, um dich zum Abendessen einzuladen." },
+                { en: "She will invite her best friend to the cinema.", de: "Sie wird ihre beste Freundin ins Kino einladen." },
+                { en: "I would invite him if he weren't so annoying.", de: "Ich würde ihn einladen, wenn er nicht so nervig wäre." }
+            ]},
+            { de: "gratulieren", aux: "hat", steps: [
+                { en: "to congratulate - congratulated", de: "gratulieren - hat gratuliert" },
+                { en: "We have congratulated him on his birthday.", de: "Wir haben ihm zum Geburtstag gratuliert." },
+                { en: "I love congratulating my friends on their success.", de: "Ich liebe es, meinen Freunden zu ihrem Erfolg zu gratulieren." },
+                { en: "I will congratulate you after the match.", de: "Ich werde dir nach dem Spiel gratulieren." },
+                { en: "I would congratulate her if she won.", de: "Ich würde ihr gratulieren, wenn sie gewinnen würde." }
             ]},
             { de: "verbringen", aux: "hat", steps: [
-                { en: "to spend (time) - spent", de: "verbringen - hat verbracht" },
-                { en: "We have spent two weeks in Spain.", de: "Wir haben zwei Wochen in Spanien verbracht." },
-                { en: "I love spending my holidays at the beach.", de: "Ich liebe es, meine Ferien am Strand zu verbringen." },
-                { en: "Where will you spend your weekend?", de: "Wo wirst du dein Wochenende verbringen?" },
-                { en: "I would spend more time outside if it were warm.", de: "Ich würde mehr Zeit draußen verbringen, wenn es warm wäre." }
+                { en: "to spend time - spent", de: "verbringen - hat verbracht" },
+                { en: "We have spent two weeks in the mountains.", de: "Wir haben zwei Wochen in den Bergen verbracht." },
+                { en: "I love spending my holidays in the countryside.", de: "Ich liebe es, meine Ferien auf dem Land zu verbringen." },
+                { en: "Where will you spend your next summer?", de: "Wo wirst du deinen nächsten Sommer verbringen?" },
+                { en: "I would spend more time outside if I were fit.", de: "Ich würde mehr Zeit draußen verbringen, wenn ich fit wäre." }
+            ]},
+            { de: "erleben", aux: "hat", steps: [
+                { en: "to experience - experienced", de: "erleben - hat erlebt" },
+                { en: "I have experienced many adventures in Australia.", de: "Ich habe viele Abenteuer in Australien erlebt." },
+                { en: "I hope to experience something new every day.", de: "Ich hoffe, jeden Tag etwas Neues zu erleben." },
+                { en: "You will experience a lot on your trip.", de: "Du wirst auf deiner Reise viel erleben." },
+                { en: "I would love to experience a real winter.", de: "Ich würde es lieben, einen echten Winter zu erleben." }
+            ]},
+            { de: "verpassen", aux: "hat", steps: [
+                { en: "to miss (a bus/event) - missed", de: "verpassen - hat verpasst" },
+                { en: "Oh no! I have missed the last bus home.", de: "Oh nein! Ich habe den letzten Bus nach Hause verpasst." },
+                { en: "I hate missing the start of a film.", de: "Ich hasse es, den Anfang von einem Film zu verpassen." },
+                { en: "Hurry up or we will miss the train!", de: "Beeil dich, oder wir werden den Zug verpassen!" },
+                { en: "I would miss the lesson if I overslept.", de: "Ich würde die Stunde verpassen, wenn ich verschlafen würde." }
             ]},
             { de: "gewinnen", aux: "hat", steps: [
                 { en: "to win - won", de: "gewinnen - hat gewonnen" },
-                { en: "Our team has won the match on Saturday.", de: "Unsere Mannschaft hat das Spiel am Samstag gewonnen." },
-                { en: "It is hard to win against this team.", de: "Es ist schwer, gegen diese Mannschaft zu gewinnen." },
-                { en: "I am sure that we will win.", de: "Ich bin sicher, dass wir gewinnen werden." },
-                { en: "I would win if I practised more.", de: "Ich würde gewinnen, wenn ich mehr üben würde." }
+                { en: "Our school team has won the tournament.", de: "Unsere Schulmannschaft hat das Turnier gewonnen." },
+                { en: "I train hard in order to win the gold medal.", de: "Ich trainiere hart, um die Goldmedaille zu gewinnen." },
+                { en: "I am sure that they will win the game.", de: "Ich bin sicher, dass sie das Spiel gewinnen werden." },
+                { en: "I would win if I were more talented.", de: "Ich würde gewinnen, wenn ich talentierter wäre." }
+            ]},
+            { de: "verlieren", aux: "hat", steps: [
+                { en: "to lose - lost", de: "verlieren - hat verloren" },
+                { en: "I have lost my keys in the park.", de: "Ich habe meine Schlüssel im Park verloren." },
+                { en: "I hate losing my phone all the time.", de: "Ich hasse es, mein Handy ständig zu verlieren." },
+                { en: "He will lose his patience very soon.", de: "Er wird sehr bald seine Geduld verlieren." },
+                { en: "We would lose the match without our keeper.", de: "Wir würden das Spiel ohne unseren Torwart verlieren." }
             ]},
             { de: "sich beschweren", aux: "hat", steps: [
                 { en: "to complain - complained", de: "sich beschweren - hat sich beschwert" },
-                { en: "The guest has complained about the cold food.", de: "Der Gast hat sich über das kalte Essen beschwert." },
-                { en: "I hate complaining in a restaurant.", de: "Ich hasse es, mich in einem Restaurant zu beschweren." },
-                { en: "He will complain to the manager.", de: "Er wird sich beim Manager beschweren." },
-                { en: "I would complain if the service were bad.", de: "Ich würde mich beschweren, wenn der Service schlecht wäre." }
+                { en: "The customer has complained about the service.", de: "Der Kunde hat sich über den Service beschwert." },
+                { en: "I'm calling in order to complain about the noise.", de: "Ich rufe an, um mich über den Lärm zu beschweren." },
+                { en: "He will complain to the teacher about the grade.", de: "Er wird sich beim Lehrer über die Note beschweren." },
+                { en: "I would complain if the room were dirty.", de: "Ich würde mich beschweren, wenn das Zimmer schmutzig wäre." }
             ]},
-            { de: "mitbringen", aux: "hat", steps: [
-                { en: "to bring along - brought along", de: "mitbringen - hat mitgebracht" },
-                { en: "I have brought some cake for everyone.", de: "Ich habe Kuchen für alle mitgebracht." },
-                { en: "Don't forget to bring your book along.", de: "Vergiss nicht, dein Buch mitzubringen." },
-                { en: "Will you bring your dog along to the park?", de: "Wirst du deinen Hund in den Park mitbringen?" },
-                { en: "I would bring a gift if I were invited.", de: "Ich würde ein Geschenk mitbringen, wenn ich eingeladen wäre." }
+            { de: "teilnehmen an", aux: "hat", steps: [
+                { en: "to take part in - taken part in", de: "teilnehmen an - hat teilgenommen" },
+                { en: "I have taken part in a German competition.", de: "Ich habe an einem Deutschwettbewerb teilgenommen." },
+                { en: "I hope to take part in the school play.", de: "Ich hoffe, am Schultheater teilzunehmen." },
+                { en: "Will you take part in the marathon?", de: "Wirst du am Marathon teilnehmen?" },
+                { en: "I would take part if I had the time.", de: "Ich würde teilnehmen, wenn ich die Zeit hätte." }
+            ]},
+            { de: "verstehen", aux: "hat", steps: [
+                { en: "to understand - understood", de: "verstehen - hat verstanden" },
+                { en: "I have understood every word the teacher said.", de: "Ich habe jedes Wort verstanden, das der Lehrer gesagt hat." },
+                { en: "It is difficult to understand this grammar rule.", de: "Es ist schwierig, diese Grammatikregel zu verstehen." },
+                { en: "You will understand the story better later.", de: "Du wirst die Geschichte später besser verstehen." },
+                { en: "I would understand it if you explained it.", de: "Ich würde es verstehen, wenn du es erklären würdest." }
             ]}
         ];
 
@@ -279,12 +321,12 @@
             { de: "Haben (Foundations)", steps: [
                 { en: "List: I have, I had, I would have", de: "Ich habe, ich hatte, ich hätte" },
                 { en: "Conditional: If I had more time, I would have a better job.", de: "Wenn ich mehr Zeit hätte, hätte ich einen besseren Job." },
-                { en: "Past: When I had more time, I used to read every day.", de: "Als ich mehr Zeit hatte, habe ich jeden Tag gelesen." }
+                { en: "Past Phrase: When I had more time, I used to read every day.", de: "Als ich mehr Zeit hatte, habe ich jeden Tag gelesen." }
             ]},
             { de: "Sein (Foundations)", steps: [
                 { en: "List: I am, I was, I would be", de: "Ich bin, ich war, ich wäre" },
                 { en: "Conditional: If it were sunny today, I would be very happy.", de: "Wenn es heute sunnig wäre, wäre ich sehr glücklich." },
-                { en: "Past: When I was a child, I lived in a small village.", de: "Als ich ein Kind war, habe ich in einem kleinen Dorf gewohnt." }
+                { en: "Past Phrase: When I was a child, I lived in a small village.", de: "Als ich ein Kind war, habe ich in einem kleinen Dorf gewohnt." }
             ]}
         ];
 
@@ -297,10 +339,6 @@
         let gameMode = 'race';
         const WIN_SCORE = 30;
 
-        // UI Initialization
-        const studentCountInput = document.getElementById('student-count');
-        const nameInputs = document.getElementById('name-inputs');
-
         function setMode(mode) {
             gameMode = mode;
             document.getElementById('mode-race').className = mode === 'race' ? 'px-4 py-2 rounded-lg bg-sky-600 text-xs font-bold transition-all' : 'px-4 py-2 rounded-lg bg-slate-700 text-xs font-bold transition-all';
@@ -309,13 +347,14 @@
         }
 
         function updateNameFields() {
-            nameInputs.innerHTML = '';
-            const count = Math.min(parseInt(studentCountInput.value) || 1, 16);
+            const container = document.getElementById('name-inputs');
+            container.innerHTML = '';
+            const count = Math.min(parseInt(document.getElementById('student-count').value) || 1, 16);
             for (let i = 0; i < count; i++) {
-                nameInputs.innerHTML += `<input type="text" placeholder="Astronaut ${i+1}" class="student-name-input bg-slate-800 border border-slate-700 rounded p-1 text-sm text-white outline-none focus:border-sky-500 transition-all">`;
+                container.innerHTML += `<input type="text" placeholder="Astronaut ${i+1}" class="student-name-input bg-slate-800 border border-slate-700 rounded p-1 text-sm text-white outline-none focus:border-sky-500 transition-all">`;
             }
         }
-        studentCountInput.addEventListener('input', updateNameFields);
+        document.getElementById('student-count').addEventListener('input', updateNameFields);
         updateNameFields();
 
         function startGame() {
@@ -327,14 +366,14 @@
                     id: 'std-' + idx,
                     color: getColor(idx)
                 }));
-                document.getElementById('tracks-container').classList.remove('hidden');
-                document.getElementById('scoring-section').classList.remove('hidden');
-                document.getElementById('score-info').classList.remove('hidden');
+                document.getElementById('tracks-container').style.display = 'flex';
+                document.getElementById('race-controls').style.display = 'block';
+                document.getElementById('score-info').style.display = 'inline';
             } else {
                 students = [];
-                document.getElementById('tracks-container').classList.add('hidden');
-                document.getElementById('scoring-section').classList.add('hidden');
-                document.getElementById('score-info').classList.add('hidden');
+                document.getElementById('tracks-container').style.display = 'none';
+                document.getElementById('race-controls').style.display = 'none';
+                document.getElementById('score-info').style.display = 'none';
             }
 
             document.getElementById('setup-screen').classList.add('hidden');
@@ -346,7 +385,7 @@
         }
 
         function prepareVerbs() {
-            // Requirement: First randomized perfects are Sein, then Haben, then Sein.
+            // First randomized perfects are Sein, then Haben, then Sein.
             const seins = mainVerbs.filter(v => v.aux === 'ist').sort(() => Math.random() - 0.5);
             const habens = mainVerbs.filter(v => v.aux === 'hat').sort(() => Math.random() - 0.5);
             
@@ -373,7 +412,6 @@
                             <path d="M10 5L0 0V30L10 25V5Z" fill="${student.color}" opacity="0.6" />
                         </svg>
                     </div>
-                    <div class="absolute right-2 text-[8px] text-slate-800 font-bold h-full flex items-center">FINISH</div>
                 `;
                 container.appendChild(track);
             });
@@ -395,8 +433,7 @@
         }
 
         function updateStepUI() {
-            const answerCard = document.getElementById('answer-card');
-            answerCard.classList.remove('visible');
+            document.getElementById('answer-card').classList.remove('visible');
             
             const step = currentVerb.steps[currentStepIndex];
             document.getElementById('verb-title').innerText = currentVerb.de;
@@ -413,13 +450,11 @@
                 indicator.appendChild(dot);
             });
 
-            updatePointButtons();
-            
-            // If solo mode, change the reveal button text slightly
-            if (gameMode === 'solo') {
-                document.getElementById('confirm-btn').innerText = "Next Step";
-            } else {
+            if (gameMode === 'race') {
+                updatePointButtons();
                 document.getElementById('confirm-btn').innerText = "Confirm & Next";
+            } else {
+                document.getElementById('confirm-btn').innerText = "Next Step";
             }
         }
 
@@ -460,9 +495,7 @@
                     const percent = Math.min(2 + (student.score / WIN_SCORE) * 92, 94);
                     rocket.style.left = percent + '%';
                     
-                    if (student.score >= WIN_SCORE) {
-                        showWinner(student.name);
-                    }
+                    if (student.score >= WIN_SCORE) showWinner(student.name);
                 });
             }
 
@@ -474,9 +507,7 @@
             }
         }
 
-        function nextVerb() {
-            loadNextVerb();
-        }
+        function nextVerb() { loadNextVerb(); }
 
         function getColor(i) {
             return ['#38bdf8', '#fb7185', '#34d399', '#facc15', '#a78bfa', '#fb923c', '#818cf8', '#2dd4bf', '#fb923c', '#94a3b8', '#f472b6', '#4ade80', '#60a5fa', '#f87171', '#c084fc', '#475569'][i % 16];
@@ -491,8 +522,7 @@
                 star.style.left = Math.random() * 100 + '%';
                 star.style.top = Math.random() * 100 + '%';
                 const size = Math.random() * 2 + 1;
-                star.style.width = size + 'px';
-                star.style.height = size + 'px';
+                star.style.width = size + 'px'; star.style.height = size + 'px';
                 star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
                 container.appendChild(star);
             }
@@ -506,11 +536,8 @@
                     <div class="text-7xl mb-4">🏆</div>
                     <h2 class="text-4xl font-bold mb-1">Space Champion!</h2>
                     <p class="text-2xl text-sky-400 mb-6">${name}</p>
-                    <button onclick="location.reload()" class="bg-sky-600 px-8 py-3 rounded-full font-bold hover:bg-sky-500 transition-all">
-                        New Mission
-                    </button>
-                </div>
-            `;
+                    <button onclick="location.reload()" class="bg-sky-600 px-8 py-3 rounded-full font-bold hover:bg-sky-500 transition-all">New Mission</button>
+                </div>`;
             document.body.appendChild(modal);
         }
     </script>
