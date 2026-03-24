@@ -13,18 +13,45 @@
             background: #0f172a;
             color: white;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Question Area at Top - Reduced height */
+        #question-area {
+            height: 48%;
+            background: #0f172a;
+            padding: 0.75rem 1rem;
+            display: flex;
+            flex-direction: column;
+            border-bottom: 2px solid #1e293b;
+            z-index: 30;
+        }
+
+        /* Rocket Area at Bottom - Increased height */
+        #rocket-area {
+            height: 52%;
+            background: #020617;
+            position: relative;
+            overflow-y: auto;
+            border-top: 1px solid #334155;
         }
 
         .space-track {
-            background: linear-gradient(90deg, rgba(30,41,59,0.5) 0%, rgba(15,23,42,0.8) 100%);
+            background: linear-gradient(90deg, rgba(30,41,59,0.3) 0%, rgba(15,23,42,0.6) 100%);
             border-bottom: 1px solid #1e293b;
             position: relative;
-            height: 34px; 
+            height: 42px; 
+            min-height: 42px;
+            display: flex;
+            align-items: center;
         }
 
         .rocket {
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
+            position: absolute;
             z-index: 10;
         }
 
@@ -52,13 +79,6 @@
             border-radius: 10px;
         }
 
-        .selected-point {
-            background-color: #10b981 !important; 
-            border-color: #34d399 !important;
-            transform: scale(1.02);
-            color: white !important;
-        }
-
         #answer-card {
             opacity: 0;
             pointer-events: none;
@@ -75,7 +95,7 @@
             transition: all 0.2s ease;
         }
         .verb-box.completed {
-            background-color: #eab308 !important; /* Yellow 500 */
+            background-color: #eab308 !important; 
             color: #0f172a !important;
             border-color: #facc15 !important;
         }
@@ -83,9 +103,15 @@
             border-color: #38bdf8 !important;
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
         }
+
+        .selected-point {
+            background-color: #10b981 !important; 
+            border-color: #34d399 !important;
+            color: white !important;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body>
 
     <!-- Setup Screen -->
     <div id="setup-screen" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-950 overflow-y-auto">
@@ -96,9 +122,9 @@
             <div class="space-y-6">
                 <div class="flex flex-col md:flex-row gap-4 items-center justify-between bg-slate-800/50 p-4 rounded-xl">
                     <div class="flex items-center gap-4">
-                        <label class="text-sm font-medium text-slate-400">Astronauts:</label>
+                        <label class="text-sm font-medium text-slate-400">Astronauts (1-16):</label>
                         <input type="number" id="student-count" min="1" max="16" value="4" 
-                               class="w-16 bg-slate-800 border border-slate-600 rounded p-1 text-white outline-none">
+                               class="w-20 bg-slate-800 border border-slate-600 rounded p-2 text-white outline-none focus:ring-2 focus:ring-sky-500">
                     </div>
                     <div class="flex gap-2">
                         <button id="mode-race" onclick="setMode('race')" class="px-4 py-2 rounded-lg bg-sky-600 text-xs font-bold transition-all">Race Mode</button>
@@ -119,82 +145,65 @@
         </div>
     </div>
 
-    <!-- Game Screen -->
-    <div id="game-screen" class="hidden flex flex-col h-screen">
-        
-        <!-- Tracks Area (Race Mode) / Selection Area (Solo Mode) -->
-        <div id="top-panel" class="h-[38%] flex flex-col overflow-y-auto custom-scrollbar relative bg-slate-950 border-b border-slate-800">
-            <div id="stars"></div>
-            
-            <!-- Race Tracks -->
-            <div id="tracks-container" class="flex flex-col w-full h-full"></div>
-
-            <!-- Solo Selection Panel -->
-            <div id="solo-selection-panel" class="hidden absolute inset-0 flex flex-col p-4 z-20">
-                <div class="flex justify-between items-center mb-2 px-2">
-                    <h3 class="text-sky-400 font-bold uppercase tracking-widest text-xs">Mission Selector</h3>
-                    <span id="solo-counter" class="text-slate-500 text-[10px] font-mono">0 / 0 Completed</span>
+    <!-- Question Area (Top) -->
+    <div id="question-area" class="hidden">
+        <div class="max-w-6xl mx-auto w-full flex flex-col h-full">
+            <div class="flex justify-between items-center mb-2">
+                <div>
+                    <h2 id="verb-title" class="text-sky-400 font-bold text-xl uppercase tracking-widest leading-none">Verb</h2>
+                    <div id="step-indicator" class="flex gap-2 mt-2"></div>
                 </div>
-                <div id="verb-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 overflow-y-auto custom-scrollbar pr-2 pb-4">
-                    <!-- Verb boxes injected here -->
+                <div class="flex gap-2">
+                    <span id="score-info" class="hidden text-[10px] text-slate-500 self-center mr-4">Target: 30 Points</span>
+                    <button onclick="nextVerb()" class="bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-2 border border-slate-700 transition-all">
+                        Skip Verb <span>⏭️</span>
+                    </button>
                 </div>
             </div>
-        </div>
 
-        <!-- Question Area -->
-        <div class="h-[62%] bg-slate-900 p-4 flex flex-col relative">
-            <div class="max-w-6xl mx-auto w-full flex flex-col h-full">
-                
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h2 id="verb-title" class="text-sky-400 font-bold text-xl uppercase tracking-widest">Verb</h2>
-                        <div id="step-indicator" class="flex gap-2 mt-1">
-                            <!-- Step dots -->
-                        </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 flex-grow overflow-hidden pb-1">
+                <!-- English Side -->
+                <div id="challenge-card" onclick="revealCurrentStep()" class="bg-slate-800/50 border-2 border-dashed border-sky-500/30 rounded-xl p-4 cursor-pointer hover:border-sky-500/60 transition-all flex flex-col items-center justify-center text-center group overflow-y-auto custom-scrollbar">
+                    <span class="text-sky-500/50 text-[9px] font-mono mb-1 group-hover:text-sky-400 uppercase">Challenge</span>
+                    <div id="english-text" class="text-md md:text-lg font-medium leading-snug"></div>
+                    <div class="mt-2 text-sky-500 text-[9px] animate-bounce opacity-50">Click to reveal German</div>
+                </div>
+
+                <!-- German Side -->
+                <div id="answer-card" class="bg-emerald-900/5 border-2 border-emerald-500/10 rounded-xl p-3 flex flex-col overflow-hidden">
+                    <div class="text-center flex-grow flex flex-col justify-center">
+                        <span class="text-emerald-500/50 text-[9px] font-mono mb-1 uppercase">Solution</span>
+                        <div id="german-text" class="text-md md:text-xl font-bold text-emerald-400 leading-snug"></div>
                     </div>
-                    <div class="flex gap-2">
-                        <span id="score-info" class="hidden text-xs text-slate-500 self-center mr-4 text-nowrap">Target: 30 Points</span>
-                        <button onclick="nextVerb()" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-full text-[10px] font-bold flex items-center gap-2 border border-slate-700 transition-all">
-                            Skip Verb <span>⏭️</span>
+                    
+                    <div id="scoring-section" class="mt-2 border-t border-slate-800 pt-2">
+                        <div id="race-controls">
+                            <p id="selection-label" class="text-[9px] text-slate-500 uppercase tracking-widest mb-1 text-center">Correct Astronauts:</p>
+                            <div id="point-buttons" class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-1 mb-2 max-h-20 overflow-y-auto p-1 custom-scrollbar"></div>
+                        </div>
+                        <button id="confirm-btn" onclick="confirmPoints()" class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded font-bold text-xs transition-all shadow-lg">
+                            Confirm & Next
                         </button>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow overflow-hidden">
-                    
-                    <!-- English Side -->
-                    <div id="challenge-card" onclick="revealCurrentStep()" class="bg-slate-800/50 border-2 border-dashed border-sky-500/30 rounded-xl p-6 cursor-pointer hover:border-sky-500/60 transition-all flex flex-col items-center justify-center text-center group overflow-y-auto custom-scrollbar">
-                        <span class="text-sky-500/50 text-[10px] font-mono mb-2 group-hover:text-sky-400">ENGLISH CHALLENGE</span>
-                        <div id="english-text" class="text-lg md:text-xl font-medium leading-relaxed">
-                            <!-- Step text -->
-                        </div>
-                        <div class="mt-4 text-sky-500 text-[10px] animate-bounce opacity-50">Click to reveal German</div>
-                    </div>
-
-                    <!-- German Side -->
-                    <div id="answer-card" class="bg-emerald-900/5 border-2 border-emerald-500/10 rounded-xl p-4 flex flex-col overflow-hidden">
-                        <div class="text-center flex-grow flex flex-col justify-center">
-                            <span class="text-emerald-500/50 text-[10px] font-mono mb-2">GERMAN TRANSLATION</span>
-                            <div id="german-text" class="text-xl md:text-2xl font-bold text-emerald-400 leading-relaxed">
-                                <!-- Answer text -->
-                            </div>
-                        </div>
-                        
-                        <div id="scoring-section" class="mt-4 border-t border-slate-800 pt-4">
-                            <div id="race-controls">
-                                <p id="selection-label" class="text-[10px] text-slate-500 uppercase tracking-widest mb-2 text-center">Select Astronauts:</p>
-                                <div id="point-buttons" class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-1 mb-4 max-h-24 overflow-y-auto p-1 custom-scrollbar">
-                                    <!-- Buttons -->
-                                </div>
-                            </div>
-                            <button id="confirm-btn" onclick="confirmPoints()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 rounded font-bold text-sm transition-all shadow-lg">
-                                Confirm & Next Step
-                            </button>
-                        </div>
-                    </div>
-
-                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Rocket Area (Bottom) -->
+    <div id="rocket-area" class="hidden custom-scrollbar">
+        <div id="stars"></div>
+        
+        <!-- Track Container -->
+        <div id="tracks-container" class="flex flex-col w-full min-h-full"></div>
+
+        <!-- Solo Panel overlay -->
+        <div id="solo-selection-panel" class="hidden absolute inset-0 flex flex-col p-4 z-40 bg-slate-950/90 overflow-hidden">
+            <div class="flex justify-between items-center mb-2 px-2">
+                <h3 class="text-sky-400 font-bold uppercase tracking-widest text-xs">Mission Selector</h3>
+                <span id="solo-counter" class="text-slate-500 text-[10px] font-mono">0 / 0 Completed</span>
+            </div>
+            <div id="verb-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 overflow-y-auto custom-scrollbar pr-2 pb-10"></div>
         </div>
     </div>
 
@@ -309,13 +318,27 @@
                 { en: "to miss - missed", de: "verpassen - hat verpasst" },
                 { en: "Oh no! I have missed the last bus home.", de: "Oh nein! Ich habe den letzten Bus nach Hause verpasst." },
                 { en: "I hate missing the start of a film.", de: "Ich hasse es, den Anfang von einem Film zu verpassen." },
-                { en: "Hurry up or we will miss the train!", de: "Beeil dich, oder we will miss the train!" },
+                { en: "Hurry up or we will miss the train!", de: "Beeil dich, oder wir werden den Zug verpassen!" },
                 { en: "I would miss the lesson if I overslept.", de: "Ich würde die Stunde verpassen, wenn ich verschlafen würde." }
+            ]},
+            { de: "gewinnen", aux: "hat", steps: [
+                { en: "to win - won", de: "gewinnen - hat gewonnen" },
+                { en: "Our school team has won the tournament.", de: "Unsere Schulmannschaft hat das Turnier gewonnen." },
+                { en: "I train hard in order to win the gold medal.", de: "Ich trainiere hart, um die Goldmedaille zu gewinnen." },
+                { en: "I am sure that they will win the game.", de: "Ich bin sicher, dass sie das Spiel gewinnen werden." },
+                { en: "I would win if I were more talented.", de: "Ich würde gewinnen, wenn ich talentierter wäre." }
+            ]},
+            { de: "verlieren", aux: "hat", steps: [
+                { en: "to lose - lost", de: "verlieren - hat verloren" },
+                { en: "I have lost my keys in the park.", de: "Ich habe meine Schlüssel im Park verloren." },
+                { en: "I hate losing my phone all the time.", de: "Ich hasse es, mein Handy ständig zu verlieren." },
+                { en: "He will lose his patience very soon.", de: "Er wird sehr bald seine Geduld verlieren." },
+                { en: "We would lose the match without our keeper.", de: "Wir würden das Spiel ohne unseren Torwart verlieren." }
             ]},
             { de: "stattfinden", aux: "hat", steps: [
                 { en: "to take place - taken place", de: "stattfinden - hat stattgefunden" },
                 { en: "The concert has taken place in the park.", de: "Das Konzert hat im Park stattgefunden." },
-                { en: "I hope the party takes place tomorrow.", de: "Ich hoffe, dass die Party morgen stattfindet." },
+                { en: "I hope the party takes place tomorrow.", de: "Ich hoffe, dass die Party morgen findet statt." },
                 { en: "The festival will take place in July.", de: "Das Festival wird im Juli stattfinden." },
                 { en: "It would take place if there were more money.", de: "Es würde stattfinden, wenn es mehr Geld gäbe." }
             ]},
@@ -375,7 +398,7 @@
                 { en: "Present: I have, I had, I would have", de: "Ich habe, ich hatte, ich hätte" },
                 { en: "Imperfect: I had a lot of stress at school last week.", de: "Ich hatte letzte Woche viel Stress in der Schule." },
                 { en: "Future: I will have a big party for my birthday.", de: "Ich werde eine große Party zu meinem Geburtstag haben." },
-                { en: "Conditional: I would have a dog if I lived in a house.", de: "Ich hätte einen Hund, wenn ich in einem Haus wohnen würde." },
+                { en: "Conditional: I would have a dog if I lived in a house.", de: "Ich hätte einen Hund, wenn ich in einem haus wohnen würde." },
                 { en: "Past Phrase: When I had more time, I used to read every day.", de: "Als ich mehr Zeit hatte, habe ich jeden Tag gelesen." }
             ]},
             { de: "Sein (Foundations)", steps: [
@@ -383,7 +406,7 @@
                 { en: "Imperfect: We were very tired after the long journey.", de: "Wir waren nach der langen Reise sehr müde." },
                 { en: "Future: I will be at home at eight o'clock tonight.", de: "Ich werde heute Abend um acht Uhr zu Hause sein." },
                 { en: "Conditional: I would be very happy if I won the race.", de: "Ich wäre sehr glücklich, wenn ich das Rennen gewinnen würde." },
-                { en: "Past Phrase: When I was a child, I lived in a small village.", de: "Als ich ein Kind war, habe ich in einem kleinen Dorf gewohnt." }
+                { en: "Past Phrase: When I was a child, I lived in a small village.", de: "Als ich ein kind war, habe ich in einem kleinen Dorf gewohnt." }
             ]},
             { de: "Werden (Foundations)", steps: [
                 { en: "Present: I become, I became, I would become", de: "Ich werde, ich wurde, ich würde werden" },
@@ -414,13 +437,17 @@
         function updateNameFields() {
             const container = document.getElementById('name-inputs');
             container.innerHTML = '';
-            const count = Math.min(parseInt(document.getElementById('student-count').value) || 1, 16);
+            let val = parseInt(document.getElementById('student-count').value);
+            if (isNaN(val)) val = 1;
+            const count = Math.min(Math.max(val, 1), 16);
+            
             for (let i = 0; i < count; i++) {
                 container.innerHTML += `<input type="text" placeholder="Astronaut ${i+1}" class="student-name-input bg-slate-800 border border-slate-700 rounded p-1 text-sm text-white outline-none focus:border-sky-500 transition-all">`;
             }
         }
-        document.getElementById('student-count').addEventListener('input', updateNameFields);
-        updateNameFields();
+        
+        document.getElementById('student-count').onchange = updateNameFields;
+        document.getElementById('student-count').onblur = updateNameFields;
 
         function startGame() {
             if (gameMode === 'race') {
@@ -448,7 +475,9 @@
             }
 
             document.getElementById('setup-screen').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('question-area').classList.remove('hidden');
+            document.getElementById('rocket-area').classList.remove('hidden');
+            initTracks();
         }
 
         function generateVerbGrid() {
@@ -459,7 +488,9 @@
 
             allAvailable.forEach((verb) => {
                 const box = document.createElement('div');
-                box.className = `verb-box p-2 bg-slate-800 border-2 border-slate-700 rounded text-[9px] font-bold text-center cursor-pointer hover:bg-slate-700 ${completedVerbs.has(verb.de) ? 'completed' : ''} ${currentVerb && currentVerb.de === verb.de ? 'active' : ''}`;
+                const isComplete = completedVerbs.has(verb.de);
+                const isActive = currentVerb && currentVerb.de === verb.de;
+                box.className = `verb-box p-2 bg-slate-800 border-2 border-slate-700 rounded text-[9px] font-bold text-center cursor-pointer hover:bg-slate-700 ${isComplete ? 'completed' : ''} ${isActive ? 'active' : ''}`;
                 box.innerText = verb.de;
                 box.onclick = () => loadSpecificVerb(verb);
                 grid.appendChild(box);
@@ -491,13 +522,14 @@
 
             students.forEach((student) => {
                 const track = document.createElement('div');
-                track.className = 'space-track w-full relative flex items-center shrink-0';
+                track.className = 'space-track w-full relative shrink-0';
                 track.innerHTML = `
-                    <div class="absolute left-1 text-[8px] font-bold text-slate-500 uppercase z-20 bg-slate-950/80 px-1 rounded">${student.name}</div>
-                    <div id="rocket-${student.id}" class="rocket absolute" style="left: 2%">
+                    <div class="absolute left-1 text-[8px] font-bold text-slate-400 uppercase z-20 bg-slate-900/80 px-1 rounded border border-slate-800">${student.name}</div>
+                    <div id="rocket-${student.id}" class="rocket" style="left: 2%">
                         <svg width="40" height="20" viewBox="0 0 60 30" fill="none">
                             <path d="M50 15L10 5V25L50 15Z" fill="${student.color}" />
                             <path d="M10 5L0 0V30L10 25V5Z" fill="${student.color}" opacity="0.6" />
+                            <circle cx="25" cy="15" r="3" fill="white" opacity="0.8" />
                         </svg>
                     </div>
                 `;
@@ -642,7 +674,10 @@
             document.body.appendChild(modal);
         }
 
-        window.onload = createStars;
+        window.onload = () => {
+            updateNameFields();
+            createStars();
+        }
     </script>
 </body>
 </html>
